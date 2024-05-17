@@ -48,9 +48,9 @@ search_n_launch() {
 
 get_config() {
    while IFS= read -r line; do
-      case $line in
-         [[:alnum:]]* | /*) echo "$line" ;;
-      esac
+      if [[ ${line:0:1} != "#" ]] then
+         echo "$line"
+      fi
    done < "$1"
 }
 
