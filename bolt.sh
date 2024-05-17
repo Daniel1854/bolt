@@ -3,35 +3,30 @@
 # Prompts you for keywords to your local files, directories or Google search and launches them respectively.
 # Dependencies: grep, sed, find, awk, file, xargs
 
-MAXDEPTH=6
+MAXDEPTH=10
 SEARCHLIST=/tmp/searchlist
+
+BROWSER=brave
+EDITOR=nvim
 
 #========================================================
 # Modify this section according to your preference
 #========================================================
 launch() {
+   # Find out the mimetype of the file you wannna launch
    case $(file --mime-type "$1" -bL) in
-      #====================================================
-      # Find out the mimetype of the file you wannna launch
-      #====================================================
+      # Launch using your favorite programs
       video/*)
-         #================================================
-         # Launch using your favorite programs
-         #================================================
          mpv "$1"
          ;;
-      #================================================
-      # So on and so forth
-      #================================================
       application/pdf | application/epub+zip)
-         zathura "$1"
+         evince "$1"
          ;;
       text/* | inode/x-empty | application/json | application/octet-stream)
-         "$TERMINAL" "$EDITOR" "$1"
-         # st "$EDITOR" "$*"
+         alacritty -e "$EDITOR" "$1"
          ;;
       inode/directory)
-         "$TERMINAL" "$EXPLORER" "$*"
+         alacritty -e "$EDITOR" "$*"
          # st lf "$*"
          ;;
    esac
@@ -42,7 +37,7 @@ search_n_launch() {
    if [ -n "$RESULT" ]; then
       launch "$RESULT"
    else
-      "$BROWSER" google.com/search\?q="$1"
+      "$BROWSER" duckduckgo.com/\?q="$1"
    fi
 }
 
@@ -55,23 +50,8 @@ get_config() {
 }
 
 dmenu_search() {
-   QUERY=$(awk -F / '{print $(NF-1)"/"$NF}' "$SEARCHLIST" | "$1") &&
+   QUERY=$(awk -F / '{print $(NF-2)"/"$(NF-1)"/"$NF}' "$SEARCHLIST" | $1) &&
       search_n_launch "$QUERY"
-}
-
-tmux_search() {
-   if pidof tmux; then
-      tmux new-window
-   else
-      tmux new-session -d \; switch-client
-   fi
-   if pidof "$TERMINAL"; then
-      [ "$(pidof "$TERMINAL")" != "$(xdo pid)" ] &&
-         xdo activate -N Alacritty
-   else
-      "$TERMINAL" -e tmux attach &
-   fi
-   tmux send "$0 --fzf-search" "Enter"
 }
 
 fzf_search() {
@@ -104,11 +84,10 @@ generate() {
 while :; do
    case $1 in
       --generate) generate ;;
-      --tmux-search) tmux_search ;;
       --fzf-search) fzf_search ;;
       --launch) launch "$2" ;;
       --rofi-search)
-         dmenu_search "rofi -sort true -sorting-method fzf -dmenu -i -p Open)"
+         dmenu_search "rofi -sort true -sorting-method fzf -dmenu -i -p Open"
          ;;
       --dmenu-search) dmenu_search "dmenu -i" ;;
       --watch) watch ;;
