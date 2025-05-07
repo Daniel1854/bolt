@@ -8,6 +8,7 @@ SEARCHLIST=/tmp/searchlist
 
 BROWSER=brave
 EDITOR=nvim
+HOME_DIR=/home/dsoukup
 
 #========================================================
 # Modify this section according to your preference
@@ -50,8 +51,30 @@ get_config() {
 }
 
 dmenu_search() {
-   QUERY=$(awk -F / '{print $(NF-3)"/"$(NF-2)"/"$(NF-1)"/"$NF}' "$SEARCHLIST" | $1) &&
+  # get the folder before home to change it to ~/
+   HDIR=$(echo "$HOME_DIR" | awk -F / '{print $NF}')
+   QUERY=$(awk -F / -v HDIR=$HDIR '{
+   if (NF > 5)
+      if ($(NF - 2) == HDIR)
+         printf "%s/%s\n", $(NF - 1), $NF
+      else if ($(NF - 3) == HDIR)
+         printf "%s/%s/%s\n", $(NF - 2), $(NF - 1), $NF
+      else if ($(NF - 4) == HDIR)
+         printf "%s/%s/%s/%s\n", $(NF - 3), $(NF - 2), $(NF - 1), $NF
+      else if ($(NF - 5) == HDIR)
+         printf "%s/%s/%s/%s/%s\n", $(NF -4), $(NF - 3), $(NF - 2), $(NF - 1), $NF
+   else
+      printf "%s/%s/%s/%s/%s\n", $(NF - 4), $(NF - 3), $(NF - 2), $(NF - 1), $NF
+   }' "$SEARCHLIST" | "$1") &&
       search_n_launch "$QUERY"
+}
+
+run_dmenu() {
+   dmenu -i
+}
+
+run_rofi() {
+   rofi -sort true -sorting-method fzf -dmenu -i -p "Bolt Launch"
 }
 
 fzf_search() {
@@ -86,10 +109,8 @@ while :; do
       --generate) generate ;;
       --fzf-search) fzf_search ;;
       --launch) launch "$2" ;;
-      --rofi-search)
-         dmenu_search "rofi -sort true -sorting-method fzf -dmenu -i -p Open"
-         ;;
-      --dmenu-search) dmenu_search "dmenu -i" ;;
+      --rofi-search) dmenu_search "run_rofi" ;;
+      --dmenu-search) dmenu_search "run_dmenu" ;;
       --watch) watch ;;
       *) break ;;
    esac
