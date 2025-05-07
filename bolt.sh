@@ -3,7 +3,7 @@
 # Prompts you for keywords to your local files, directories or Google search and launches them respectively.
 # Dependencies: grep, sed, find, awk, file, xargs
 
-MAXDEPTH=10
+MAXDEPTH=11
 SEARCHLIST=/tmp/searchlist
 
 BROWSER=brave
@@ -50,7 +50,7 @@ get_config() {
 }
 
 dmenu_search() {
-   QUERY=$(awk -F / '{print $(NF-2)"/"$(NF-1)"/"$NF}' "$SEARCHLIST" | $1) &&
+   QUERY=$(awk -F / '{print $(NF-3)"/"$(NF-2)"/"$(NF-1)"/"$NF}' "$SEARCHLIST" | $1) &&
       search_n_launch "$QUERY"
 }
 
@@ -77,7 +77,7 @@ watch() {
 generate() {
    FILTERS=$(get_config ~/.config/bolt/filters | awk '{printf "%s\\|",$0;}' | sed -e 's/|\./|\\./g' -e 's/\\|$//g')
    get_config ~/.config/bolt/paths |
-      xargs -I% find % -maxdepth $MAXDEPTH \
+      xargs -I% find % -maxdepth $MAXDEPTH -type f\
          ! -regex ".*\($FILTERS\).*" > "$SEARCHLIST"
 }
 
