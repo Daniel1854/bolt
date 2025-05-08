@@ -74,7 +74,7 @@ run_dmenu() {
 }
 
 run_rofi() {
-   rofi -sort true -sorting-method fzf -dmenu -i -p "Bolt Launch"
+   rofi -sort true -sorting-method fzf -dmenu -i -p "Bolt"
 }
 
 fzf_search() {
