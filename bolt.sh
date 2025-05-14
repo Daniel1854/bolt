@@ -58,6 +58,8 @@ dmenu_search() {
    HDIR=$(echo "$HOME_DIR" | awk -F / '{print $NF}')
    QUERY=$(awk -F / -v HDIR=$HDIR '{
    if (NF > 5)
+      if ($(NF - 1) == HDIR)
+         printf "%s\n", $NF
       if ($(NF - 2) == HDIR)
          printf "%s/%s\n", $(NF - 1), $NF
       else if ($(NF - 3) == HDIR)
