@@ -20,11 +20,11 @@ launch() {
       video/*)
          mpv "$1"
          ;;
-      image/svg+xml)
+      image/svg+xml | image/png | image/jpg)
          ristretto "$1"
          ;;
       application/pdf | application/epub+zip)
-         zathura "$1"
+         evince "$1"
          ;;
       text/* | inode/x-empty | application/json | application/octet-stream)
          alacritty -e "$EDITOR" "$1"
